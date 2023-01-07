@@ -184,37 +184,7 @@ def telegram_webhook():
                 bot.sendMessage(chat_id, '/pay: Pays another user in the same room x tokens\nTo use, "/pay NICKNAME TOKEN_AMOUNT", where TOKEN_AMOUNT is a positive integer\ne.g. "/pay arnold 5"\nNote: both sender and recipient will be notified of the transaction\n\n/join:\nJoins a room and resets your points to 0\nTo use, "/join ROOM_ID NICKNAME confirm", where ROOM_ID is an integer\ne.g. "/join 21122022 arnold confirm"\nNote: your previous points and room joined will be lost\n\n/room:\nGets information about ROOM_ID and the users in the same room with their respective points\nTo use, "/room"\n\n/setpoints:\nManually sets your own points to a specified amount\nTo use, "/setpoints AMOUNT", where AMOUNT is your desired amount\ne.g. "/setpoints 30"\nNote: all users in the same room will be notified of your previous and new points')
 
 
-#get_users command
-            elif text == "/get_users":
-                get_users_query = db.select([pointsTable])
-                all_users = connection.execute(get_users_query).fetchall()
-                txt = ''
-                for user in all_users:
-                    txt += "{} ({}) Room: {}\n".format(user[3], user[0], user[2])
-                bot.sendMessage(chat_id, txt)
 
-
-#display_records command
-            elif text == "/display_records":
-                get_records_query = db.select([recordsTable])
-                txt = ''
-                try:
-                    all_records = connection.execute(get_records_query).fetchall()
-                    for record in all_records:
-                        txt += str(record) + "\n"
-                    bot.sendMessage(chat_id, txt)
-                except:
-                    bot.sendMessage(chat_id, "data fetching failed")
-
-
-
-
-
-#clear_records command
-            elif text == "/clear_records":
-                clear_query = db.delete(recordsTable)
-                connection.execute(clear_query)
-                bot.sendMessage(chat_id, "records cleared")
 
 
         else:
