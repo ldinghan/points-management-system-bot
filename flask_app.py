@@ -100,23 +100,31 @@ def telegram_webhook():
 
                     join_room_id = str(command[1])
                     nickname = str(command[2]).lower()
-                    query = db.delete(pointsTable).where(pointsTable.columns.id == user_id)
-                    connection.execute(query)
-                    query = db.insert(pointsTable).values(id=user_id, points=0, room=join_room_id, nickname=nickname)
-                    connection.execute(query)
-                    bot.sendMessage(chat_id, 'successfully joined room {} as "{}"'.format(join_room_id, nickname))
-                    if join_room_id != "0":
-                        room_users_query = db.select([pointsTable]).where(pointsTable.columns.room == join_room_id)
-                        room_users = connection.execute(room_users_query).fetchall()
-                        txt = ""
-                        for user in room_users:
-                            txt += "{}\n".format(user[3])
 
-                        for user in room_users:
-                            try:
-                                bot.sendMessage(user[0], "{} has joined the room.\n\nRoom {}:\n{}".format(nickname, join_room_id, txt))
-                            except:
-                                pass
+                    existing_nickname_query = db.select([pointsTable]).where(db.and_(pointsTable.columns.nickname == nickname, pointsTable.columns.room == join_room_id))
+                    nickname_exists = connection.execute(existing_nickname_query).fetchall()
+
+                    if not nickname_exists:
+                        query = db.delete(pointsTable).where(pointsTable.columns.id == user_id)
+                        connection.execute(query)
+                        query = db.insert(pointsTable).values(id=user_id, points=0, room=join_room_id, nickname=nickname)
+                        connection.execute(query)
+                        bot.sendMessage(chat_id, 'successfully joined room {} as "{}"'.format(join_room_id, nickname))
+
+                        if join_room_id != "0":
+                            room_users_query = db.select([pointsTable]).where(pointsTable.columns.room == join_room_id)
+                            room_users = connection.execute(room_users_query).fetchall()
+                            txt = ""
+                            for user in room_users:
+                                txt += "{}\n".format(user[3])
+
+                            for user in room_users:
+                                try:
+                                    bot.sendMessage(user[0], "{} has joined the room.\n\nRoom {}:\n{}".format(nickname, join_room_id, txt))
+                                except:
+                                    pass
+                    else:
+                        bot.sendMessage(chat_id, 'nickname {} has already been used, please enter a different nickname'.format(nickname))
 
                 else:
                     bot.sendMessage(chat_id, "Please use the correct format -- '/join ROOM_ID NICKNAME confirm'")
